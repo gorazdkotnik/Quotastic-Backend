@@ -22,9 +22,9 @@ export class User {
   @Column()
   lastName: string;
 
-  @Column()
+  @Column({ select: false })
   password: string;
 
-  @OneToMany((type) => Quote, (quote) => quote.user, { eager: true })
+  @OneToMany((type) => Quote, (quote) => quote.user, { eager: false })
   quotes: Quote[];
 }

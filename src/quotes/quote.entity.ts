@@ -9,6 +9,6 @@ export class Quote {
   @Column()
   content: string;
 
-  @ManyToOne((type) => User, (user) => user.quotes, { eager: false })
+  @ManyToOne((type) => User, (user) => user.quotes, { eager: true })
   user: User;
 }

@@ -9,5 +9,6 @@ import { Quote } from './quote.entity';
   imports: [AuthModule, TypeOrmModule.forFeature([Quote])],
   controllers: [QuotesController],
   providers: [QuotesService],
+  exports: [QuotesService],
 })
 export class QuotesModule {}
