@@ -6,6 +6,7 @@ import { NotFoundException } from '@nestjs/common/exceptions';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Vote, VoteType } from 'src/votes/vote.entity';
+import QuotesSelect from './utils/quotes-select';
 
 @Injectable()
 export class QuotesService {
@@ -39,14 +40,7 @@ export class QuotesService {
     const quotes = await this.quoteRepository
       .createQueryBuilder('quote')
       .leftJoinAndSelect('quote.votes', 'vote')
-      .select([
-        'quote.id',
-        'quote.content',
-        'quote.userId',
-        "CAST(coalesce(SUM(vote.vote), '0') AS integer) AS voteScore",
-        'ARRAY_AGG(DISTINCT CASE WHEN vote.vote = 1 THEN vote.userId END) AS upvoters',
-        'ARRAY_AGG(DISTINCT CASE WHEN vote.vote = -1 THEN vote.userId END) AS downvoters',
-      ])
+      .select(QuotesSelect)
       .groupBy('quote.id')
       .orderBy('voteScore', 'DESC')
       .getRawMany();
@@ -58,14 +52,7 @@ export class QuotesService {
     const quotes = await this.quoteRepository
       .createQueryBuilder('quote')
       .leftJoinAndSelect('quote.votes', 'vote')
-      .select([
-        'quote.id',
-        'quote.content',
-        'quote.userId',
-        "CAST(coalesce(SUM(vote.vote), '0') AS integer) AS voteScore",
-        'ARRAY_AGG(DISTINCT CASE WHEN vote.vote = 1 THEN vote.userId END) AS upvoters',
-        'ARRAY_AGG(DISTINCT CASE WHEN vote.vote = -1 THEN vote.userId END) AS downvoters',
-      ])
+      .select(QuotesSelect)
       .groupBy('quote.id')
       .orderBy('quote.id', 'DESC')
       .getRawMany();
@@ -80,14 +67,7 @@ export class QuotesService {
       .leftJoinAndSelect('quote.votes', 'vote')
       .where('vote.userId = :userId', { userId: user.id })
       .andWhere('vote.vote = 1')
-      .select([
-        'quote.id',
-        'quote.content',
-        'quote.userId',
-        "CAST(coalesce(SUM(vote.vote), '0') AS integer) AS voteScore",
-        'ARRAY_AGG(DISTINCT CASE WHEN vote.vote = 1 THEN vote.userId END) AS upvoters',
-        'ARRAY_AGG(DISTINCT CASE WHEN vote.vote = -1 THEN vote.userId END) AS downvoters',
-      ])
+      .select(QuotesSelect)
       .groupBy('quote.id')
       .orderBy('voteScore', 'DESC')
       .getRawMany();
