@@ -78,7 +78,7 @@ export class QuotesService {
     return quote;
   }
 
-  async upvoteQuote(id: number, user: User): Promise<Vote> {
+  async voteQuote(id: number, user: User, voteType: VoteType): Promise<Vote> {
     const quote = await this.quoteRepository.findOne({ where: { id } });
 
     if (!quote) {
@@ -89,12 +89,12 @@ export class QuotesService {
       where: { user: user, quote: quote },
     });
 
-    if (vote && vote.vote === VoteType.Upvote) {
-      throw new ConflictException(`User has already upvoted this quote`);
+    if (vote && vote.vote === voteType) {
+      throw new ConflictException(`User has already voted this quote`);
     }
 
-    if (vote && vote.vote === VoteType.Downvote) {
-      vote.vote = VoteType.Upvote;
+    if (vote && vote.vote !== voteType) {
+      vote.vote = voteType;
       await this.voteRepository.save(vote);
       return vote;
     }
@@ -102,38 +102,7 @@ export class QuotesService {
     const newVote = this.voteRepository.create({
       user: user,
       quote: quote,
-      vote: VoteType.Upvote,
-    });
-
-    await this.voteRepository.save(newVote);
-    return newVote;
-  }
-
-  async downvoteQuote(id: number, user: User): Promise<Vote> {
-    const quote = await this.quoteRepository.findOne({ where: { id } });
-
-    if (!quote) {
-      throw new NotFoundException(`Quote with ID "${id}" not found`);
-    }
-
-    const vote = await this.voteRepository.findOne({
-      where: { user: user, quote: quote },
-    });
-
-    if (vote && vote.vote === VoteType.Downvote) {
-      throw new ConflictException(`User has already downvoted this quote`);
-    }
-
-    if (vote && vote.vote === VoteType.Upvote) {
-      vote.vote = VoteType.Downvote;
-      await this.voteRepository.save(vote);
-      return vote;
-    }
-
-    const newVote = this.voteRepository.create({
-      user: user,
-      quote: quote,
-      vote: VoteType.Downvote,
+      vote: voteType,
     });
 
     await this.voteRepository.save(newVote);
