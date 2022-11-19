@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from '../auth/user.entity';
 
 @Entity()
 export class Quote {
@@ -7,4 +8,7 @@ export class Quote {
 
   @Column()
   content: string;
+
+  @ManyToOne((type) => User, (user) => user.quotes, { eager: false })
+  user: User;
 }

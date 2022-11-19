@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  Index,
+  OneToMany,
+} from 'typeorm';
+import { Quote } from '../quotes/quote.entity';
 
 @Entity()
 export class User {
@@ -17,4 +24,7 @@ export class User {
 
   @Column()
   password: string;
+
+  @OneToMany((type) => Quote, (quote) => quote.user, { eager: true })
+  quotes: Quote[];
 }
