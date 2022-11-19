@@ -2,10 +2,10 @@ import { TypeOrmModule } from '@nestjs/typeorm/dist';
 import { Module } from '@nestjs/common';
 import { QuotesController } from './quotes.controller';
 import { QuotesService } from './quotes.service';
-import { QuoteRepository } from './quote.repository';
+import { Quote } from './quote.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([QuoteRepository])],
+  imports: [TypeOrmModule.forFeature([Quote])],
   controllers: [QuotesController],
   providers: [QuotesService],
 })

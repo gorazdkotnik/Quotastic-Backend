@@ -1,47 +1,53 @@
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { Injectable } from '@nestjs/common';
-import { Quote } from './quote.model';
-import { v4 as uuid } from 'uuid';
 import { NotFoundException } from '@nestjs/common/exceptions';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Quote } from './quote.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class QuotesService {
-  private quotes: Quote[] = [];
+  constructor(
+    @InjectRepository(Quote)
+    private quoteRepository: Repository<Quote>,
+  ) {}
 
-  getAllQuotes(): Quote[] {
-    return this.quotes;
-  }
-
-  getQuoteById(id: string): Quote {
-    const quote = this.quotes.find((quote) => quote.id === id);
-
-    if (!quote) {
-      throw new NotFoundException(`Quote with ID "${id}" not found.`);
+  async getQuoteById(id: number): Promise<Quote> {
+    const found = await this.quoteRepository.findOneBy({ id });
+    if (!found) {
+      throw new NotFoundException(`Quote with ID "${id}" not found`);
     }
 
-    return quote;
-  }
-
-  createQuote(createQuoteDto: CreateQuoteDto): Quote {
-    const { content } = createQuoteDto;
-
-    const quote: Quote = {
-      id: uuid(),
-      content,
-    };
-
-    this.quotes.push(quote);
-    return quote;
-  }
-
-  updateQuote(id: string, content: string): Quote {
-    const found = this.getQuoteById(id);
-    found.content = content;
     return found;
   }
 
-  deleteQuote(id: string) {
-    const found = this.getQuoteById(id);
-    this.quotes = this.quotes.filter((quote) => quote.id !== found.id);
+  async getAllQuotes(): Promise<Quote[]> {
+    return await this.quoteRepository.find();
+  }
+
+  async createQuote(createQuoteDto: CreateQuoteDto): Promise<Quote> {
+    const { content } = createQuoteDto;
+
+    const quote = this.quoteRepository.create({
+      content,
+    });
+
+    await this.quoteRepository.save(quote);
+    return quote;
+  }
+
+  async deleteQuote(id: number): Promise<void> {
+    const result = await this.quoteRepository.delete(id);
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`Quote with ID "${id}" not found`);
+    }
+  }
+
+  async updateQuote(id: number, content: string): Promise<Quote> {
+    const quote = await this.getQuoteById(id);
+    quote.content = content;
+    await this.quoteRepository.save(quote);
+    return quote;
   }
 }
