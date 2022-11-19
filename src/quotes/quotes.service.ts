@@ -1,9 +1,9 @@
+import { Quote } from 'src/quotes/quote.entity';
 import { User } from 'src/auth/user.entity';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { Injectable, ConflictException } from '@nestjs/common';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Quote } from './quote.entity';
 import { Repository } from 'typeorm';
 import { Vote, VoteType } from 'src/votes/vote.entity';
 
@@ -17,10 +17,16 @@ export class QuotesService {
     private voteRepository: Repository<Vote>,
   ) {}
 
-  async getQuoteById(id: number, user: User): Promise<Quote> {
-    const quote = await this.quoteRepository.findOne({
-      where: { id, user: user },
-    });
+  async getQuoteById(id: number, user: User | null): Promise<Quote> {
+    let quote: Quote;
+
+    if (user) {
+      quote = await this.quoteRepository.findOne({
+        where: { id, user: user },
+      });
+    } else {
+      quote = await this.quoteRepository.findOne({ where: { id } });
+    }
 
     if (!quote) {
       throw new NotFoundException(`Quote with ID "${id}" not found`);
@@ -33,6 +39,47 @@ export class QuotesService {
     const quotes = await this.quoteRepository
       .createQueryBuilder('quote')
       .leftJoinAndSelect('quote.votes', 'vote')
+      .select([
+        'quote.id',
+        'quote.content',
+        'quote.userId',
+        "CAST(coalesce(SUM(vote.vote), '0') AS integer) AS voteScore",
+        'ARRAY_AGG(DISTINCT CASE WHEN vote.vote = 1 THEN vote.userId END) AS upvoters',
+        'ARRAY_AGG(DISTINCT CASE WHEN vote.vote = -1 THEN vote.userId END) AS downvoters',
+      ])
+      .groupBy('quote.id')
+      .orderBy('voteScore', 'DESC')
+      .getRawMany();
+
+    return quotes;
+  }
+
+  async getMostRecentQuotes(): Promise<Quote[]> {
+    const quotes = await this.quoteRepository
+      .createQueryBuilder('quote')
+      .leftJoinAndSelect('quote.votes', 'vote')
+      .select([
+        'quote.id',
+        'quote.content',
+        'quote.userId',
+        "CAST(coalesce(SUM(vote.vote), '0') AS integer) AS voteScore",
+        'ARRAY_AGG(DISTINCT CASE WHEN vote.vote = 1 THEN vote.userId END) AS upvoters',
+        'ARRAY_AGG(DISTINCT CASE WHEN vote.vote = -1 THEN vote.userId END) AS downvoters',
+      ])
+      .groupBy('quote.id')
+      .orderBy('quote.id', 'DESC')
+      .getRawMany();
+
+    return quotes;
+  }
+
+  async getLikedQuotes(user: User): Promise<Quote[]> {
+    const quotes = await this.quoteRepository
+
+      .createQueryBuilder('quote')
+      .leftJoinAndSelect('quote.votes', 'vote')
+      .where('vote.userId = :userId', { userId: user.id })
+      .andWhere('vote.vote = 1')
       .select([
         'quote.id',
         'quote.content',

@@ -20,17 +20,25 @@ export class QuotesController {
     return this.quotesService.getAllQuotes();
   }
 
-  // get random quote
   @Get('random')
-  @UseGuards(AuthGuard())
   getRandomQuote() {
     return this.quotesService.getRandomQuote();
   }
 
-  @Get('/:id')
+  @Get('most-recent')
+  getMostRecentQuotes() {
+    return this.quotesService.getMostRecentQuotes();
+  }
+
+  @Get('liked-quotes')
   @UseGuards(AuthGuard())
-  getQuoteById(@Param('id', ParseIntPipe) id: number, @GetUser() user) {
-    return this.quotesService.getQuoteById(id, user);
+  getLikedQuotes(@GetUser() user) {
+    return this.quotesService.getLikedQuotes(user);
+  }
+
+  @Get('/:id')
+  getQuoteById(@Param('id', ParseIntPipe) id: number) {
+    return this.quotesService.getQuoteById(id, null);
   }
 
   @Post('/:id/upvote')
