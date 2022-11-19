@@ -2,17 +2,24 @@ import { CreateQuoteDto } from './dto/create-quote.dto';
 import { Injectable } from '@nestjs/common';
 import { Quote } from './quote.model';
 import { v4 as uuid } from 'uuid';
+import { NotFoundException } from '@nestjs/common/exceptions';
 
 @Injectable()
 export class QuotesService {
-  private readonly quotes: Quote[] = [];
+  private quotes: Quote[] = [];
 
   getAllQuotes(): Quote[] {
     return this.quotes;
   }
 
   getQuoteById(id: string): Quote {
-    return this.quotes.find((quote) => quote.id === id);
+    const quote = this.quotes.find((quote) => quote.id === id);
+
+    if (!quote) {
+      throw new NotFoundException(`Quote with ID "${id}" not found.`);
+    }
+
+    return quote;
   }
 
   createQuote(createQuoteDto: CreateQuoteDto): Quote {
@@ -28,13 +35,14 @@ export class QuotesService {
     return quote;
   }
 
-  updateQuote(id: string, content: string) {
-    const index = this.quotes.findIndex((quote) => quote.id === id);
-    this.quotes[index].content = content;
+  updateQuote(id: string, content: string): Quote {
+    const found = this.getQuoteById(id);
+    found.content = content;
+    return found;
   }
 
   deleteQuote(id: string) {
-    const index = this.quotes.findIndex((quote) => quote.id === id);
-    this.quotes.splice(index, 1);
+    const found = this.getQuoteById(id);
+    this.quotes = this.quotes.filter((quote) => quote.id !== found.id);
   }
 }

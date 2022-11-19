@@ -6,6 +6,8 @@ import {
   Body,
   Patch,
   Delete,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { QuotesService } from './quotes.service';
 import { CreateQuoteDto } from './dto/create-quote.dto';
@@ -25,6 +27,7 @@ export class QuotesController {
   }
 
   @Post()
+  @UsePipes(ValidationPipe)
   createQuote(@Body() createQuoteDto: CreateQuoteDto) {
     return this.quotesService.createQuote(createQuoteDto);
   }
