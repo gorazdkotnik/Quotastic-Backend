@@ -11,11 +11,11 @@ export class QuotesService {
     return this.quotes;
   }
 
-  getQuoteById(id: number): Quote {
+  getQuoteById(id: string): Quote {
     return this.quotes.find((quote) => quote.id === id);
   }
 
-  createQuote(createQuoteDto: CreateQuoteDto) {
+  createQuote(createQuoteDto: CreateQuoteDto): Quote {
     const { content, user_id } = createQuoteDto;
 
     const quote: Quote = {
@@ -28,12 +28,12 @@ export class QuotesService {
     return quote;
   }
 
-  updateQuote(id: number, content: string) {
+  updateQuote(id: string, content: string) {
     const index = this.quotes.findIndex((quote) => quote.id === id);
     this.quotes[index].content = content;
   }
 
-  deleteQuote(id: number) {
+  deleteQuote(id: string) {
     const index = this.quotes.findIndex((quote) => quote.id === id);
     this.quotes.splice(index, 1);
   }
