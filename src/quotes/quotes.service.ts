@@ -139,4 +139,10 @@ export class QuotesService {
     await this.voteRepository.save(newVote);
     return newVote;
   }
+
+  async getRandomQuote(): Promise<Quote> {
+    const quotes = await this.getAllQuotes();
+    const randIndex = Math.floor(Math.random() * quotes.length);
+    return quotes[randIndex];
+  }
 }

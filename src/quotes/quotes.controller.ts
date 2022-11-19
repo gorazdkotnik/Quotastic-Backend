@@ -19,13 +19,19 @@ export class QuotesController {
     return this.quotesService.getAllQuotes();
   }
 
+  // get random quote
+  @Get('random')
+  @UseGuards(AuthGuard())
+  getRandomQuote() {
+    return this.quotesService.getRandomQuote();
+  }
+
   @Get('/:id')
   @UseGuards(AuthGuard())
   getQuoteById(@Param('id', ParseIntPipe) id: number, @GetUser() user) {
     return this.quotesService.getQuoteById(id, user);
   }
 
-  // /quotes/:id/upvote
   @Post('/:id/upvote')
   @UseGuards(AuthGuard())
   upvoteQuote(@Param('id', ParseIntPipe) id: number, @GetUser() user) {
