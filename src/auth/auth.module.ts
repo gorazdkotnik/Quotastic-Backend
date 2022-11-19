@@ -6,15 +6,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { User } from './user.entity';
+import config from 'src/configs';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      secret: 'topSecret51',
-      signOptions: {
-        expiresIn: 60 * 60 * 24,
-      },
+    JwtModule.registerAsync({
+      useFactory: () => ({
+        secret: config().jwtSecret,
+        signOptions: { expiresIn: config().jwtExpiresIn },
+      }),
     }),
     TypeOrmModule.forFeature([User]),
   ],

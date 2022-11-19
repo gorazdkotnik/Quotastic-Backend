@@ -53,8 +53,6 @@ export class AuthService {
       take: 1,
     });
 
-    console.log(user);
-
     if (user.length > 0 && (await bcrypt.compare(password, user[0].password))) {
       const payload = { email };
       const accessToken = this.jwtService.sign(payload);
