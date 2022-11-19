@@ -1,20 +1,23 @@
 import { User } from 'src/auth/user.entity';
 import { CreateQuoteDto } from './dto/create-quote.dto';
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Quote } from './quote.entity';
 import { Repository } from 'typeorm';
+import { Vote, VoteType } from 'src/votes/vote.entity';
 
 @Injectable()
 export class QuotesService {
   constructor(
     @InjectRepository(Quote)
     private quoteRepository: Repository<Quote>,
+
+    @InjectRepository(Vote)
+    private voteRepository: Repository<Vote>,
   ) {}
 
   async getQuoteById(id: number, user: User): Promise<Quote> {
-    // get quotes and user usernames
     const quote = await this.quoteRepository.findOne({
       where: { id, user: user },
     });
@@ -27,7 +30,22 @@ export class QuotesService {
   }
 
   async getAllQuotes(): Promise<Quote[]> {
-    return await this.quoteRepository.find();
+    const quotes = await this.quoteRepository
+      .createQueryBuilder('quote')
+      .leftJoinAndSelect('quote.votes', 'vote')
+      .select([
+        'quote.id',
+        'quote.content',
+        'quote.userId',
+        "CAST(coalesce(SUM(vote.vote), '0') AS integer) AS voteScore",
+        'ARRAY_AGG(DISTINCT CASE WHEN vote.vote = 1 THEN vote.userId END) AS upvoters',
+        'ARRAY_AGG(DISTINCT CASE WHEN vote.vote = -1 THEN vote.userId END) AS downvoters',
+      ])
+      .groupBy('quote.id')
+      .orderBy('voteScore', 'DESC')
+      .getRawMany();
+
+    return quotes;
   }
 
   async createQuote(
@@ -58,5 +76,67 @@ export class QuotesService {
     quote.content = content;
     await this.quoteRepository.save(quote);
     return quote;
+  }
+
+  async upvoteQuote(id: number, user: User): Promise<Vote> {
+    const quote = await this.quoteRepository.findOne({ where: { id } });
+
+    if (!quote) {
+      throw new NotFoundException(`Quote with ID "${id}" not found`);
+    }
+
+    const vote = await this.voteRepository.findOne({
+      where: { user: user, quote: quote },
+    });
+
+    if (vote && vote.vote === VoteType.Upvote) {
+      throw new ConflictException(`User has already upvoted this quote`);
+    }
+
+    if (vote && vote.vote === VoteType.Downvote) {
+      vote.vote = VoteType.Upvote;
+      await this.voteRepository.save(vote);
+      return vote;
+    }
+
+    const newVote = this.voteRepository.create({
+      user: user,
+      quote: quote,
+      vote: VoteType.Upvote,
+    });
+
+    await this.voteRepository.save(newVote);
+    return newVote;
+  }
+
+  async downvoteQuote(id: number, user: User): Promise<Vote> {
+    const quote = await this.quoteRepository.findOne({ where: { id } });
+
+    if (!quote) {
+      throw new NotFoundException(`Quote with ID "${id}" not found`);
+    }
+
+    const vote = await this.voteRepository.findOne({
+      where: { user: user, quote: quote },
+    });
+
+    if (vote && vote.vote === VoteType.Downvote) {
+      throw new ConflictException(`User has already downvoted this quote`);
+    }
+
+    if (vote && vote.vote === VoteType.Upvote) {
+      vote.vote = VoteType.Downvote;
+      await this.voteRepository.save(vote);
+      return vote;
+    }
+
+    const newVote = this.voteRepository.create({
+      user: user,
+      quote: quote,
+      vote: VoteType.Downvote,
+    });
+
+    await this.voteRepository.save(newVote);
+    return newVote;
   }
 }

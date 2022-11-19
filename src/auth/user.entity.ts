@@ -6,6 +6,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Quote } from '../quotes/quote.entity';
+import { Vote } from '../votes/vote.entity';
 
 @Entity()
 export class User {
@@ -27,4 +28,7 @@ export class User {
 
   @OneToMany((type) => Quote, (quote) => quote.user, { eager: false })
   quotes: Quote[];
+
+  @OneToMany((type) => Vote, (vote) => vote.user, { eager: false })
+  votes: Vote[];
 }

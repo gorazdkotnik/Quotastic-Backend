@@ -3,6 +3,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Post,
   UseGuards,
 } from '@nestjs/common';
 import { QuotesService } from './quotes.service';
@@ -22,5 +23,18 @@ export class QuotesController {
   @UseGuards(AuthGuard())
   getQuoteById(@Param('id', ParseIntPipe) id: number, @GetUser() user) {
     return this.quotesService.getQuoteById(id, user);
+  }
+
+  // /quotes/:id/upvote
+  @Post('/:id/upvote')
+  @UseGuards(AuthGuard())
+  upvoteQuote(@Param('id', ParseIntPipe) id: number, @GetUser() user) {
+    return this.quotesService.upvoteQuote(id, user);
+  }
+
+  @Post('/:id/downvote')
+  @UseGuards(AuthGuard())
+  downvoteQuote(@Param('id', ParseIntPipe) id: number, @GetUser() user) {
+    return this.quotesService.downvoteQuote(id, user);
   }
 }
