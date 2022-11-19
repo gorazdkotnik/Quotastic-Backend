@@ -19,15 +19,9 @@ export class QuotesService {
   ) {}
 
   async getQuoteById(id: number, user: User | null): Promise<Quote> {
-    let quote: Quote;
+    const where = user ? { id, user: user } : { id };
 
-    if (user) {
-      quote = await this.quoteRepository.findOne({
-        where: { id, user: user },
-      });
-    } else {
-      quote = await this.quoteRepository.findOne({ where: { id } });
-    }
+    const quote = await QuotesSelect(this.quoteRepository, where).getRawOne();
 
     if (!quote) {
       throw new NotFoundException(`Quote with ID "${id}" not found`);
@@ -37,11 +31,7 @@ export class QuotesService {
   }
 
   async getAllQuotes(): Promise<Quote[]> {
-    const quotes = await this.quoteRepository
-      .createQueryBuilder('quote')
-      .leftJoinAndSelect('quote.votes', 'vote')
-      .select(QuotesSelect)
-      .groupBy('quote.id')
+    const quotes = await QuotesSelect(this.quoteRepository, {})
       .orderBy('voteScore', 'DESC')
       .getRawMany();
 
@@ -49,11 +39,7 @@ export class QuotesService {
   }
 
   async getMostRecentQuotes(): Promise<Quote[]> {
-    const quotes = await this.quoteRepository
-      .createQueryBuilder('quote')
-      .leftJoinAndSelect('quote.votes', 'vote')
-      .select(QuotesSelect)
-      .groupBy('quote.id')
+    const quotes = await QuotesSelect(this.quoteRepository, {})
       .orderBy('quote.id', 'DESC')
       .getRawMany();
 
@@ -61,14 +47,11 @@ export class QuotesService {
   }
 
   async getLikedQuotes(user: User): Promise<Quote[]> {
-    const quotes = await this.quoteRepository
-
-      .createQueryBuilder('quote')
-      .leftJoinAndSelect('quote.votes', 'vote')
-      .where('vote.userId = :userId', { userId: user.id })
-      .andWhere('vote.vote = 1')
-      .select(QuotesSelect)
-      .groupBy('quote.id')
+    const quotes = await QuotesSelect(
+      this.quoteRepository,
+      `vote.userId = ${user.id}`,
+    )
+      .andWhere('vote.vote = :vote', { vote: VoteType.Upvote })
       .orderBy('voteScore', 'DESC')
       .getRawMany();
 

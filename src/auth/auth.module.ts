@@ -14,7 +14,7 @@ import config from 'src/configs';
     JwtModule.registerAsync({
       useFactory: () => ({
         secret: config().jwtSecret,
-        signOptions: { expiresIn: config().jwtExpiresIn },
+        signOptions: { expiresIn: Number(config().jwtExpiresIn) },
       }),
     }),
     TypeOrmModule.forFeature([User]),
