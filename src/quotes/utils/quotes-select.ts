@@ -5,7 +5,7 @@ export default function (quoteRepository: Repository<Quote>, where: any) {
   const quotesSelect = [
     'quote.id',
     'quote.content',
-    'quote.userId',
+    "JSON_BUILD_OBJECT('id', user.id, 'email', user.email, 'firstName', user.firstName, 'lastName', user.lastName) AS user",
     "CAST(coalesce(SUM(vote.vote), '0') AS integer) AS voteScore",
     'ARRAY_AGG(DISTINCT CASE WHEN vote.vote = 1 THEN vote.userId END) AS upvoters',
     'ARRAY_AGG(DISTINCT CASE WHEN vote.vote = -1 THEN vote.userId END) AS downvoters',
@@ -14,7 +14,8 @@ export default function (quoteRepository: Repository<Quote>, where: any) {
   return quoteRepository
     .createQueryBuilder('quote')
     .leftJoinAndSelect('quote.votes', 'vote')
+    .leftJoinAndSelect('quote.user', 'user')
     .where(where)
     .select(quotesSelect)
-    .groupBy('quote.id');
+    .groupBy('quote.id, user.id');
 }
