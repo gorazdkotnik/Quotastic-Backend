@@ -23,12 +23,11 @@ export class QuotesService {
   }
 
   createQuote(createQuoteDto: CreateQuoteDto): Quote {
-    const { content, user_id } = createQuoteDto;
+    const { content } = createQuoteDto;
 
     const quote: Quote = {
       id: uuid(),
       content,
-      user_id,
     };
 
     this.quotes.push(quote);
