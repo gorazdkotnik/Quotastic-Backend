@@ -1,6 +1,7 @@
 import { UsersService } from './users.service';
 import { AuthGuard } from '@nestjs/passport';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -18,6 +19,38 @@ import { GetUser } from 'src/auth/utils/get-user.decorator';
 import { CreateQuoteDto } from 'src/quotes/dto/create-quote.dto';
 import { QuotesService } from 'src/quotes/quotes.service';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { Res, UploadedFile, UseInterceptors } from '@nestjs/common/decorators';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import path = require('path');
+import { v4 as uuidv4 } from 'uuid';
+
+export const storage = {
+  fileFilter: (req, file, cb) => {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return cb(
+        new BadRequestException('Only image files are allowed!'),
+        false,
+      );
+    }
+
+    cb(null, true);
+  },
+  limits: {
+    // 1MB
+    fileSize: 1024 * 1024,
+  },
+  storage: diskStorage({
+    destination: './uploads/profileimages',
+    filename: (req, file, cb) => {
+      const filename: string =
+        path.parse(file.originalname).name.replace(/\s/g, '') + uuidv4();
+      const extension: string = path.parse(file.originalname).ext;
+
+      cb(null, `${filename}${extension}`);
+    },
+  }),
+};
 
 @Controller('me')
 @UseGuards(AuthGuard())
@@ -61,5 +94,21 @@ export class UsersController {
     @GetUser() user,
   ) {
     return this.usersService.updatePassword(updatePasswordDto, user);
+  }
+
+  @Post('/avatar')
+  @UseInterceptors(FileInterceptor('file', storage))
+  uploadAvatar(@UploadedFile() file, @GetUser() user) {
+    return this.usersService.uploadAvatar(file.filename, user);
+  }
+
+  @Get('/avatar/:imagename')
+  getAvatar(@Param('imagename') imagename, @Res() res) {
+    return this.usersService.getAvatar(imagename, res);
+  }
+
+  @Delete('/avatar')
+  deleteAvatar(@GetUser() user) {
+    return this.usersService.deleteAvatar(user);
   }
 }

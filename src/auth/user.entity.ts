@@ -26,6 +26,9 @@ export class User {
   @Column({ select: false })
   password: string;
 
+  @Column({ nullable: true })
+  avatar: string;
+
   @OneToMany((type) => Quote, (quote) => quote.user, { eager: false })
   quotes: Quote[];
 
