@@ -1,7 +1,6 @@
 import { UsersService } from './users.service';
 import { AuthGuard } from '@nestjs/passport';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -24,12 +23,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import path = require('path');
 import { v4 as uuidv4 } from 'uuid';
+import { Throttle } from '@nestjs/throttler';
+import { UnsupportedMediaTypeException } from '@nestjs/common/exceptions';
 
 export const storage = {
   fileFilter: (req, file, cb) => {
     if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
       return cb(
-        new BadRequestException('Only image files are allowed!'),
+        new UnsupportedMediaTypeException('Only image files are allowed!'),
         false,
       );
     }
@@ -37,7 +38,6 @@ export const storage = {
     cb(null, true);
   },
   limits: {
-    // 1MB
     fileSize: 1024 * 1024,
   },
   storage: diskStorage({
@@ -98,6 +98,7 @@ export class UsersController {
 
   @Post('/avatar')
   @UseInterceptors(FileInterceptor('file', storage))
+  @Throttle(5, 60)
   uploadAvatar(@UploadedFile() file, @GetUser() user) {
     return this.usersService.uploadAvatar(file.filename, user);
   }
@@ -108,6 +109,7 @@ export class UsersController {
   }
 
   @Delete('/avatar')
+  @Throttle(5, 60)
   deleteAvatar(@GetUser() user) {
     return this.usersService.deleteAvatar(user);
   }
