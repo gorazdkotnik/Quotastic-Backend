@@ -1,6 +1,6 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 
-export const typeOrmConfig: () => TypeOrmModuleOptions = () => ({
+export const dataSourceOptions: () => DataSourceOptions = () => ({
   type: 'postgres',
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT, 10),
@@ -10,3 +10,6 @@ export const typeOrmConfig: () => TypeOrmModuleOptions = () => ({
   entities: ['dist/**/*.entity.js'],
   migrations: ['dist/database/migrations/*.js'],
 });
+
+const dataSource = new DataSource(dataSourceOptions());
+export default dataSource;
