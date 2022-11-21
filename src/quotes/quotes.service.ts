@@ -6,7 +6,7 @@ import { NotFoundException } from '@nestjs/common/exceptions';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Vote, VoteType } from 'src/votes/vote.entity';
-import QuotesSelect from './utils/quotes-select';
+import QuotesSelect from './helpers/quotes-select';
 
 @Injectable()
 export class QuotesService {

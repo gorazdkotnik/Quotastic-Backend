@@ -20,37 +20,8 @@ import { QuotesService } from 'src/quotes/quotes.service';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { Res, UploadedFile, UseInterceptors } from '@nestjs/common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import path = require('path');
-import { v4 as uuidv4 } from 'uuid';
 import { Throttle } from '@nestjs/throttler';
-import { UnsupportedMediaTypeException } from '@nestjs/common/exceptions';
-
-export const storage = {
-  fileFilter: (req, file, cb) => {
-    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-      return cb(
-        new UnsupportedMediaTypeException('Only image files are allowed!'),
-        false,
-      );
-    }
-
-    cb(null, true);
-  },
-  limits: {
-    fileSize: 1024 * 1024,
-  },
-  storage: diskStorage({
-    destination: './uploads/profileimages',
-    filename: (req, file, cb) => {
-      const filename: string =
-        path.parse(file.originalname).name.replace(/\s/g, '') + uuidv4();
-      const extension: string = path.parse(file.originalname).ext;
-
-      cb(null, `${filename}${extension}`);
-    },
-  }),
-};
+import { storage } from './helpers/avatar-storage.multer';
 
 @Controller('me')
 @UseGuards(AuthGuard())
