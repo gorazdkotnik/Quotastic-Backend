@@ -17,7 +17,7 @@ import { APP_GUARD } from '@nestjs/core';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => typeOrmConfig(),
+      useFactory: async () => typeOrmConfig(),
       inject: [ConfigService],
     }),
     ThrottlerModule.forRoot({
