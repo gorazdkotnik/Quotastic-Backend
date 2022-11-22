@@ -22,9 +22,24 @@ import { Res, UploadedFile, UseInterceptors } from '@nestjs/common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
 import { storage } from './helpers/avatar-storage.multer';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 @ApiTags('users')
+@ApiResponse({
+  status: 429,
+  description: 'Too many requests.',
+})
+@ApiResponse({
+  status: 500,
+  description: 'Internal server error.',
+})
+@ApiResponse({ status: 401, description: 'Unauthorized.' })
 @Controller('me')
 @UseGuards(AuthGuard())
 export class UsersController {
@@ -34,6 +49,9 @@ export class UsersController {
   ) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get your own profile' })
+  @ApiResponse({ status: 200, description: 'Return your own profile.' })
+  @ApiBearerAuth()
   getMe(@GetUser() user) {
     return user;
   }
@@ -41,12 +59,28 @@ export class UsersController {
   @Post('/myquote')
   @UsePipes(ValidationPipe)
   @HttpCode(201)
+  @ApiOperation({ summary: 'Create a quote' })
+  @ApiResponse({ status: 201, description: 'The quote has been created.' })
+  @ApiResponse({ status: 400, description: 'Invalid request body.' })
+  @ApiBearerAuth()
   createQuote(@Body() createQuoteDto: CreateQuoteDto, @GetUser() user) {
     return this.quotesService.createQuote(createQuoteDto, user);
   }
 
   @Patch('/myquote/:id')
   @UsePipes(ValidationPipe)
+  @ApiOperation({ summary: 'Update your quote' })
+  @ApiResponse({ status: 200, description: 'The quote has been updated.' })
+  @ApiResponse({ status: 400, description: 'Invalid request body.' })
+  @ApiResponse({ status: 404, description: 'Quote was not found.' })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'Quote id',
+    required: true,
+    example: 1,
+  })
+  @ApiBearerAuth()
   updateQuote(
     @Param('id', ParseIntPipe) id: number,
     @Body() createQuoteDto: CreateQuoteDto,
@@ -56,12 +90,27 @@ export class UsersController {
   }
 
   @Delete('/myquote/:id')
+  @ApiOperation({ summary: 'Delete your quote' })
+  @ApiResponse({ status: 200, description: 'The quote has been deleted.' })
+  @ApiResponse({ status: 404, description: 'Quote was not found.' })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'Quote id',
+    required: true,
+    example: 1,
+  })
+  @ApiBearerAuth()
   deleteQuote(@Param('id', ParseIntPipe) id: number, @GetUser() user) {
     return this.quotesService.deleteQuote(id, user);
   }
 
   @Patch('/update-password')
   @UsePipes(ValidationPipe)
+  @ApiOperation({ summary: 'Update your password' })
+  @ApiResponse({ status: 200, description: 'The password has been updated.' })
+  @ApiResponse({ status: 400, description: 'Invalid request body.' })
+  @ApiBearerAuth()
   updatePassword(
     @Body() updatePasswordDto: UpdatePasswordDto,
     @GetUser() user,
@@ -72,17 +121,36 @@ export class UsersController {
   @Post('/avatar')
   @UseInterceptors(FileInterceptor('file', storage))
   @Throttle(5, 60)
+  @ApiOperation({ summary: 'Upload profile avatar' })
+  @ApiResponse({ status: 200, description: 'The avatar has been uploaded.' })
+  @ApiResponse({ status: 400, description: 'Invalid request body.' })
+  @ApiResponse({ status: 415, description: 'Unsupported media type.' })
+  @ApiBearerAuth()
   uploadAvatar(@UploadedFile() file, @GetUser() user) {
     return this.usersService.uploadAvatar(file.filename, user);
   }
 
   @Get('/avatar/:imagename')
+  @ApiOperation({ summary: 'Get profile avatar' })
+  @ApiResponse({ status: 200, description: 'Return profile avatar.' })
+  @ApiResponse({ status: 404, description: 'Avatar was not found.' })
+  @ApiParam({
+    name: 'imagename',
+    type: String,
+    description: 'Image name',
+    required: true,
+    example: 'avatar.png',
+  })
   getAvatar(@Param('imagename') imagename, @Res() res) {
     return this.usersService.getAvatar(imagename, res);
   }
 
   @Delete('/avatar')
   @Throttle(5, 60)
+  @ApiOperation({ summary: 'Delete profile avatar' })
+  @ApiResponse({ status: 200, description: 'The avatar has been deleted.' })
+  @ApiResponse({ status: 404, description: 'Avatar was not found.' })
+  @ApiBearerAuth()
   deleteAvatar(@GetUser() user) {
     return this.usersService.deleteAvatar(user);
   }

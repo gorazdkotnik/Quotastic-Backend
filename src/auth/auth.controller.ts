@@ -13,6 +13,18 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { User } from './user.entity';
 
 @ApiTags('auth')
+@ApiResponse({
+  status: 400,
+  description: 'Invalid request body.',
+})
+@ApiResponse({
+  status: 429,
+  description: 'Too many requests.',
+})
+@ApiResponse({
+  status: 500,
+  description: 'Internal server error.',
+})
 @Controller('')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
