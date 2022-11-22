@@ -6,3 +6,5 @@ export default () => ({
   jwtExpiresIn: process.env.JWT_EXPIRATION_TIME,
   db: typeOrmConfig(),
 });
+
+export * from './swagger.config';
