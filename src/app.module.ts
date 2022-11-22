@@ -1,3 +1,4 @@
+import { typeOrmConfig } from 'src/configs/typeorm.config';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm/dist';
 import { QuotesModule } from './quotes/quotes.module';
@@ -16,16 +17,7 @@ import { APP_GUARD } from '@nestjs/core';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('DB_HOST'),
-        port: parseInt(configService.get('DB_PORT'), 10),
-        username: configService.get('DB_USERNAME'),
-        password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_DATABASE'),
-        entities: ['dist/**/*.entity.js'],
-        migrations: ['dist/database/migrations/*.js'],
-      }),
+      useFactory: async (configService: ConfigService) => typeOrmConfig(),
       inject: [ConfigService],
     }),
     ThrottlerModule.forRoot({

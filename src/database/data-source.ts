@@ -1,15 +1,22 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { typeOrmConfig } from 'src/configs/typeorm.config';
+import * as dotenv from 'dotenv';
 
-export const dataSourceOptions: () => DataSourceOptions = () => ({
-  type: 'postgres',
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT, 10),
-  username: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
-  entities: ['dist/**/*.entity.js'],
-  migrations: ['dist/database/migrations/*.js'],
-});
+dotenv.config();
+
+// export const dataSourceOptions: () => DataSourceOptions = () => ({
+//   type: 'postgres',
+//   host: 'localhost',
+//   port: 5432,
+//   username: 'postgres',
+//   password: 'root',
+//   database: 'quotastic',
+//   entities: ['dist/**/*.entity.js'],
+//   migrations: ['dist/database/migrations/*.js'],
+// });
+
+export const dataSourceOptions: () => DataSourceOptions = () =>
+  typeOrmConfig() as DataSourceOptions;
 
 const dataSource = new DataSource(dataSourceOptions());
 export default dataSource;
