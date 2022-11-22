@@ -10,7 +10,9 @@ import { QuotesService } from './quotes.service';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/utils/get-user.decorator';
 import { VoteType } from 'src/votes/vote.entity';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('quotes')
 @Controller('quotes')
 export class QuotesController {
   constructor(private readonly quotesService: QuotesService) {}

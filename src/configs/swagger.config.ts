@@ -7,5 +7,5 @@ export const swaggerConfig = new DocumentBuilder()
   .addTag('auth')
   .addTag('users')
   .addTag('quotes')
-  .addTag('votes')
+  .addBearerAuth()
   .build();

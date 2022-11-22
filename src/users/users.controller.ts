@@ -22,7 +22,9 @@ import { Res, UploadedFile, UseInterceptors } from '@nestjs/common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
 import { storage } from './helpers/avatar-storage.multer';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('users')
 @Controller('me')
 @UseGuards(AuthGuard())
 export class UsersController {
