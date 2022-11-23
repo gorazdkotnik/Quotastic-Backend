@@ -83,6 +83,10 @@ export class QuotesController {
   @ApiResponse({ status: 200, description: 'Upvote a quote.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Quote not found.' })
+  @ApiResponse({
+    status: 409,
+    description: 'You cannot vote on your own quote.',
+  })
   @ApiResponse({ status: 409, description: 'You already voted on this quote.' })
   @ApiParam({
     name: 'id',
@@ -102,6 +106,10 @@ export class QuotesController {
   @ApiResponse({ status: 200, description: 'Downvote a quote.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Quote not found.' })
+  @ApiResponse({
+    status: 409,
+    description: 'You cannot vote on your own quote.',
+  })
   @ApiResponse({ status: 409, description: 'You already voted on this quote.' })
   @ApiParam({
     name: 'id',

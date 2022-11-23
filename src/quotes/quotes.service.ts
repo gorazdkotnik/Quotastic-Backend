@@ -95,6 +95,11 @@ export class QuotesService {
       throw new NotFoundException(`Quote with ID "${id}" not found`);
     }
 
+    // user cannot vote on their own quote
+    if (quote.user.id === user.id) {
+      throw new ConflictException('You cannot vote on your own quote');
+    }
+
     const vote = await this.voteRepository.findOne({
       where: { user: user, quote: quote },
     });
