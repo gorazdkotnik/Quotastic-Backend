@@ -4,6 +4,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { QuotesService } from './quotes.service';
@@ -34,8 +35,24 @@ export class QuotesController {
   @Get()
   @ApiOperation({ summary: 'Get all quotes' })
   @ApiResponse({ status: 200, description: 'Return all quotes.' })
-  getAllQuotes() {
-    return this.quotesService.getAllQuotes();
+  @ApiResponse({ status: 400, description: 'Bad request.' })
+  @ApiParam({
+    name: 'take',
+    required: false,
+    type: Number,
+    description: 'Number of quotes to return.',
+    example: 10,
+  })
+  @ApiParam({
+    name: 'skip',
+    required: false,
+    type: Number,
+    description: 'Number of quotes to skip.',
+    example: 0,
+  })
+  getAllQuotes(@Query('take') take: number, @Query('skip') skip: number) {
+    console.log(skip);
+    return this.quotesService.getAllQuotes(take, skip);
   }
 
   @Get('random')
@@ -48,8 +65,25 @@ export class QuotesController {
   @Get('most-recent')
   @ApiOperation({ summary: 'Get the most recent quotes' })
   @ApiResponse({ status: 200, description: 'Return the most recent quotes.' })
-  getMostRecentQuotes() {
-    return this.quotesService.getMostRecentQuotes();
+  @ApiParam({
+    name: 'take',
+    required: false,
+    type: Number,
+    description: 'Number of quotes to return.',
+    example: 10,
+  })
+  @ApiParam({
+    name: 'skip',
+    required: false,
+    type: Number,
+    description: 'Number of quotes to skip.',
+    example: 0,
+  })
+  getMostRecentQuotes(
+    @Query('take') take: number,
+    @Query('skip') skip: number,
+  ) {
+    return this.quotesService.getMostRecentQuotes(take, skip);
   }
 
   @Get('liked-quotes')
@@ -58,8 +92,26 @@ export class QuotesController {
   @ApiResponse({ status: 200, description: 'Return your own liked quotes.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiBearerAuth()
-  getLikedQuotes(@GetUser() user) {
-    return this.quotesService.getLikedQuotes(user);
+  @ApiParam({
+    name: 'take',
+    required: false,
+    type: Number,
+    description: 'Number of quotes to return.',
+    example: 10,
+  })
+  @ApiParam({
+    name: 'skip',
+    required: false,
+    type: Number,
+    description: 'Number of quotes to skip.',
+    example: 0,
+  })
+  getLikedQuotes(
+    @GetUser() user,
+    @Query('take') take: number,
+    @Query('skip') skip: number,
+  ) {
+    return this.quotesService.getLikedQuotes(user, take, skip);
   }
 
   @Get('/:id')

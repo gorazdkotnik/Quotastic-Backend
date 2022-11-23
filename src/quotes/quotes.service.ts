@@ -21,7 +21,12 @@ export class QuotesService {
   async getQuoteById(id: number, user: User | null): Promise<Quote> {
     const where = user ? { id, user: user } : { id };
 
-    const quote = await QuotesSelect(this.quoteRepository, where).getRawOne();
+    const quote = await QuotesSelect(
+      this.quoteRepository,
+      where,
+      null,
+      null,
+    ).getRawOne();
 
     if (!quote) {
       throw new NotFoundException(`Quote with ID "${id}" not found`);
@@ -30,26 +35,32 @@ export class QuotesService {
     return quote;
   }
 
-  async getAllQuotes(): Promise<Quote[]> {
-    const quotes = await QuotesSelect(this.quoteRepository, {})
+  async getAllQuotes(take: number, skip: number): Promise<Quote[]> {
+    const quotes = await QuotesSelect(this.quoteRepository, {}, take, skip)
       .orderBy('voteScore', 'DESC')
       .getRawMany();
 
     return quotes;
   }
 
-  async getMostRecentQuotes(): Promise<Quote[]> {
-    const quotes = await QuotesSelect(this.quoteRepository, {})
+  async getMostRecentQuotes(take: number, skip: number): Promise<Quote[]> {
+    const quotes = await QuotesSelect(this.quoteRepository, {}, take, skip)
       .orderBy('quote.id', 'DESC')
       .getRawMany();
 
     return quotes;
   }
 
-  async getLikedQuotes(user: User): Promise<Quote[]> {
+  async getLikedQuotes(
+    user: User,
+    take: number,
+    skip: number,
+  ): Promise<Quote[]> {
     const quotes = await QuotesSelect(
       this.quoteRepository,
       `vote.userId = ${user.id}`,
+      take,
+      skip,
     )
       .andWhere('vote.vote = :vote', { vote: VoteType.Upvote })
       .orderBy('voteScore', 'DESC')
@@ -125,7 +136,7 @@ export class QuotesService {
   }
 
   async getRandomQuote(): Promise<Quote> {
-    const quotes = await this.getAllQuotes();
+    const quotes = await this.getAllQuotes(null, null);
     const randIndex = Math.floor(Math.random() * quotes.length);
     return quotes[randIndex];
   }

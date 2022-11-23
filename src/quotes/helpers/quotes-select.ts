@@ -1,7 +1,12 @@
 import { Repository } from 'typeorm';
 import { Quote } from '../quote.entity';
 
-export default function (quoteRepository: Repository<Quote>, where: any) {
+export default function (
+  quoteRepository: Repository<Quote>,
+  where: any,
+  take,
+  skip,
+) {
   const quotesSelect = [
     'quote.id',
     'quote.content',
@@ -17,5 +22,7 @@ export default function (quoteRepository: Repository<Quote>, where: any) {
     .leftJoinAndSelect('quote.user', 'user')
     .where(where)
     .select(quotesSelect)
-    .groupBy('quote.id, user.id');
+    .groupBy('quote.id, user.id')
+    .limit(take)
+    .offset(skip);
 }
