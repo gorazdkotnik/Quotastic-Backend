@@ -35,7 +35,6 @@ export class QuotesController {
   @Get()
   @ApiOperation({ summary: 'Get all quotes' })
   @ApiResponse({ status: 200, description: 'Return all quotes.' })
-  @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiParam({
     name: 'take',
     required: false,
