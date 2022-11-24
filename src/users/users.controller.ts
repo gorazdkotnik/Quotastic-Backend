@@ -74,6 +74,10 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'The quote has been updated.' })
   @ApiResponse({ status: 400, description: 'Invalid request body.' })
   @ApiResponse({ status: 404, description: 'Quote was not found.' })
+  @ApiResponse({
+    status: 409,
+    description: 'You are not authorized to update this quote.',
+  })
   @ApiParam({
     name: 'id',
     type: Number,
