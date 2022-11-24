@@ -20,7 +20,7 @@ import { QuotesService } from 'src/quotes/quotes.service';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { Res, UploadedFile, UseInterceptors } from '@nestjs/common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Throttle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { storage } from './helpers/avatar-storage.multer';
 import {
   ApiTags,
@@ -41,7 +41,6 @@ import {
 })
 @ApiResponse({ status: 401, description: 'Unauthorized.' })
 @Controller('me')
-@UseGuards(AuthGuard())
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
@@ -52,6 +51,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Get your own profile' })
   @ApiResponse({ status: 200, description: 'Return your own profile.' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard())
   getMe(@GetUser() user) {
     return user;
   }
@@ -63,6 +63,7 @@ export class UsersController {
   @ApiResponse({ status: 201, description: 'The quote has been created.' })
   @ApiResponse({ status: 400, description: 'Invalid request body.' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard())
   createQuote(@Body() createQuoteDto: CreateQuoteDto, @GetUser() user) {
     return this.quotesService.createQuote(createQuoteDto, user);
   }
@@ -81,6 +82,7 @@ export class UsersController {
     example: 1,
   })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard())
   updateQuote(
     @Param('id', ParseIntPipe) id: number,
     @Body() createQuoteDto: CreateQuoteDto,
@@ -101,6 +103,7 @@ export class UsersController {
     example: 1,
   })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard())
   deleteQuote(@Param('id', ParseIntPipe) id: number, @GetUser() user) {
     return this.quotesService.deleteQuote(id, user);
   }
@@ -111,6 +114,7 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'The password has been updated.' })
   @ApiResponse({ status: 400, description: 'Invalid request body.' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard())
   updatePassword(
     @Body() updatePasswordDto: UpdatePasswordDto,
     @GetUser() user,
@@ -126,6 +130,7 @@ export class UsersController {
   @ApiResponse({ status: 400, description: 'Invalid request body.' })
   @ApiResponse({ status: 415, description: 'Unsupported media type.' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard())
   uploadAvatar(@UploadedFile() file, @GetUser() user) {
     return this.usersService.uploadAvatar(file.filename, user);
   }
@@ -141,6 +146,7 @@ export class UsersController {
     required: true,
     example: 'avatar.png',
   })
+  @SkipThrottle()
   getAvatar(@Param('imagename') imagename, @Res() res) {
     return this.usersService.getAvatar(imagename, res);
   }
@@ -151,6 +157,7 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'The avatar has been deleted.' })
   @ApiResponse({ status: 404, description: 'Avatar was not found.' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard())
   deleteAvatar(@GetUser() user) {
     return this.usersService.deleteAvatar(user);
   }
