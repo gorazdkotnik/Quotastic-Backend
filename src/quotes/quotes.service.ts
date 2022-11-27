@@ -93,10 +93,21 @@ export class QuotesService {
   }
 
   async updateQuote(id: number, content: string, user: User): Promise<Quote> {
-    const quote = await this.getQuoteById(id, user);
+    const quote = await this.quoteRepository.findOne({ where: { id } });
+
+    if (!quote) {
+      throw new NotFoundException(`Quote with ID "${id}" not found`);
+    }
+
+    if (quote.user.id !== user.id) {
+      throw new ConflictException(
+        'You are not authorized to update this quote',
+      );
+    }
+
     quote.content = content;
-    await this.quoteRepository.save(quote);
-    return quote;
+
+    return this.quoteRepository.save(quote);
   }
 
   async voteQuote(id: number, user: User, voteType: VoteType): Promise<Vote> {
