@@ -39,3 +39,6 @@ lerna-debug.log*
 
 # misc
 /uploads
+.idea/*
+.DS_Store
+/pgdata

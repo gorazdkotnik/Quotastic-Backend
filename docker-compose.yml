@@ -1,24 +1,75 @@
 version: '3.8'
 services:
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginx
+    volumes:
+      - ./nginx/templates:/etc/nginx/templates
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    environment:
+      - NGINX_PORT=${NGINX_PORT}
+      - BACKEND_PORT=${PORT}
+    ports:
+      - 80:${NGINX_PORT}
+    depends_on:
+      - api
+      - postgres
+      - redis
+    networks:
+      - nesjs-network
   api:
-    container_name: 'hrm_api_${NODE_ENV}'
-    image: 'hrm_api_${NODE_ENV}'
+    container_name: 'quotastic_api_${NODE_ENV}'
+    image: 'quotastic_api_${NODE_ENV}'
     environment:
       - NODE_ENV:${NODE_ENV}
     build:
-      context: ./app
+      context: ./
       target: '${NODE_ENV}'
       dockerfile: Dockerfile
-    entrypoint: ['npm', 'run', 'start:${NODE_ENV}']
+    command: ['./wait-for-postgres.sh', './docker-entrypoint.sh']
     env_file:
       - .env
     ports:
       - 9229:9229
+    depends_on:
+      - redis
+      - postgres
     networks:
       - nesjs-network
     volumes:
-      - ./app:/usr/src/app
+      - ./:/usr/src/app
       - /usr/src/app/node_modules
     restart: unless-stopped
+  redis:
+    container_name: redis
+    image: redis:latest
+    networks:
+      - nesjs-network
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    networks:
+      - nesjs-network
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: '${DB_PREFIX}_${DB_NAME}'
+      PG_DATA: /var/lib/postgresql/data
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+  pgadmin:
+    links:
+      - postgres:postgres
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    volumes:
+      - ./pgadmindata/pgadmin:/root/.pgadmin
+    env_file:
+      - .env
+    networks:
+      - nesjs-network
+
 networks:
   nesjs-network:
