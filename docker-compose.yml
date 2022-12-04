@@ -64,14 +64,20 @@ services:
     links:
       - postgres:postgres
     container_name: pgadmin
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:5.5
     volumes:
       # - ./pgdata/pgadmin:/root/.pgadmin
-      - ./pgadmin:/var/lib/pgadmin
-    env_file:
-      - .env
+      - pgadmin-data:/var/lib/pgadmin
+    # env_file:
+    #   - .env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: secret
     networks:
       - nesjs-network
+
+volumes:
+  pgadmin-data:
 
 networks:
   nesjs-network:
