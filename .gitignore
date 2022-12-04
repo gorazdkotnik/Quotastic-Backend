@@ -42,3 +42,6 @@ lerna-debug.log*
 .idea/*
 .DS_Store
 /pgdata
+/pgadmindata
+/postgres
+/pgadmin
