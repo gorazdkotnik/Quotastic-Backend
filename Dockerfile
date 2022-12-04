@@ -29,4 +29,6 @@ COPY . .
 
 COPY --from=dev /usr/src/app/dist ./dist
 
+EXPOSE $PORT
+
 CMD ["node", "dist/main"]
