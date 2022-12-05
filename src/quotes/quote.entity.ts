@@ -8,7 +8,7 @@ import {
 import { User } from '../auth/user.entity';
 import { Vote } from 'src/votes/vote.entity';
 
-@Entity()
+@Entity('quotes')
 export class Quote {
   @PrimaryGeneratedColumn()
   id: number;

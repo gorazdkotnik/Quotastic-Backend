@@ -7,7 +7,7 @@ export enum VoteType {
   Downvote = -1,
 }
 
-@Entity()
+@Entity('votes')
 export class Vote {
   @PrimaryGeneratedColumn()
   id: number;
