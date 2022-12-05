@@ -7,7 +7,7 @@ export enum VoteType {
   Downvote = -1,
 }
 
-@Entity()
+@Entity('votes')
 export class Vote {
   @PrimaryGeneratedColumn()
   id: number;
@@ -15,9 +15,15 @@ export class Vote {
   @Column()
   vote: VoteType;
 
-  @ManyToOne((type) => User, (user) => user.votes, { eager: true })
+  @ManyToOne((type) => User, (user) => user.votes, {
+    eager: true,
+    onDelete: 'CASCADE',
+  })
   user: User;
 
-  @ManyToOne((type) => Quote, (quote) => quote.votes, { eager: false })
+  @ManyToOne((type) => Quote, (quote) => quote.votes, {
+    eager: false,
+    onDelete: 'CASCADE',
+  })
   quote: Quote;
 }
